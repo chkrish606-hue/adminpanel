@@ -235,11 +235,8 @@
 
 <!-- MAIN APP LAYOUT -->
 <div id="main-layout">
-    
-    <!-- SIDEBAR OVERLAY FOR MOBILE -->
     <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
 
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="brand-container">
             <div class="brand">
@@ -273,18 +270,13 @@
         </ul>
     </aside>
 
-    <!-- MAIN CONTENT WRAPPER -->
     <div class="main-wrapper">
-        <!-- HEADER -->
         <header class="header glass">
             <div class="header-left">
                 <button id="sidebar-toggle" class="icon-btn"><i class="fas fa-bars"></i></button>
                 <h2 id="page-title" class="page-title-text">Dashboard</h2>
             </div>
             <div class="header-right">
-                <button class="btn btn-primary btn-sm" onclick="document.querySelector('.nav-item[data-target=\'add-panel\']').click()" style="display: none; @media(min-width:480px){display:inline-flex;}">
-                    <i class="fas fa-plus"></i> Add Panel
-                </button>
                 <button id="theme-toggle" class="icon-btn" title="Toggle Theme"><i class="fas fa-sun"></i></button>
                 <button class="icon-btn" style="position: relative;" onclick="document.querySelector('.nav-item[data-target=\'manual\']').click()">
                     <i class="fas fa-bell"></i>
@@ -296,9 +288,7 @@
             </div>
         </header>
 
-        <!-- SCROLLABLE CONTENT -->
         <main class="content">
-            
             <!-- SECTION: DASHBOARD -->
             <section class="page-section" id="sec-dashboard">
                 <div class="stats-grid">
@@ -470,7 +460,6 @@
             <!-- SECTION: PAYMENT SETTINGS -->
             <section class="page-section hidden" id="sec-settings">
                 <div class="dashboard-grid">
-                    <!-- ZAPUPI & MANUAL UPI -->
                     <div class="section-box glass">
                         <div class="box-header"><h3><i class="fas fa-bolt" style="color:var(--danger); margin-right:8px;"></i> Gateway & UPI Settings</h3></div>
                         
@@ -493,7 +482,6 @@
                         <div id="qr-preview" style="margin-bottom: 20px; text-align: center;"></div>
                     </div>
 
-                    <!-- CRYPTO SETTINGS -->
                     <div class="section-box glass">
                         <div class="box-header"><h3><i class="fab fa-bitcoin" style="color:var(--neon-crypto); margin-right:8px;"></i> Crypto Settings</h3></div>
                         
@@ -713,9 +701,7 @@
                 <label style="margin:0; color:var(--text-main); font-weight:700;"><i class="fas fa-tags" style="color:var(--accent);"></i> Pricing Plans</label>
                 <button class="btn btn-outline btn-sm" onclick="window.addEditPlanRow()"><i class="fas fa-plus"></i> Add Plan</button>
             </div>
-            <div id="edit-plans-container" style="display: flex; flex-direction: column; gap: 10px;">
-                <!-- Injected via JS -->
-            </div>
+            <div id="edit-plans-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
         </div>
         <button class="btn btn-primary btn-block" id="btn-save-edit-panel" style="height: 50px;">Save Changes</button>
     </div>
@@ -759,16 +745,15 @@
         from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyAjYC4ztgPbVyjHQ3uXjYrPcyFStZQ-2_o",
-  authDomain: "kp-panel-77a17.firebaseapp.com",
-  databaseURL: "https://kp-panel-77a17-default-rtdb.firebaseio.com",
-  projectId: "kp-panel-77a17",
-  storageBucket: "kp-panel-77a17.firebasestorage.app",
-  messagingSenderId: "372669101535",
-  appId: "1:372669101535:web:d435dd4a5ea51ada46806a",
-  measurementId: "G-241RGNKTQK"
-};
-    
+        apiKey: "AIzaSyAjYC4ztgPbVyjHQ3uXjYrPcyFStZQ-2_o",
+        authDomain: "kp-panel-77a17.firebaseapp.com",
+        databaseURL: "https://kp-panel-77a17-default-rtdb.firebaseio.com",
+        projectId: "kp-panel-77a17",
+        storageBucket: "kp-panel-77a17.firebasestorage.app",
+        messagingSenderId: "372669101535",
+        appId: "1:372669101535:web:d435dd4a5ea51ada46806a",
+        measurementId: "G-241RGNKTQK"
+    };
 
     const ALLOWED_ADMINS = ["blackarmyff452@gmail.com"];
 
@@ -821,19 +806,17 @@
         themeToggle.innerHTML = isLight ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
     };
 
-    // --- AUTHENTICATION (FIXED STARTUP LAG) ---
+    // AUTHENTICATION
     onAuthStateChanged(auth, async (user) => {
-        hideLoader(); // INSTANTLY HIDE LOADER
+        hideLoader();
         if (user && ALLOWED_ADMINS.includes(user.email)) {
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('main-layout').style.display = 'flex';
             
             initBranding(); 
             
-            // Fetch users cache silently in background
             get(ref(db, 'users')).then(snap => { usersDataCache = snap.val() || {}; });
             
-            // 🔥 FIX: Fetch ZapUPI key silently so it's ready for gateway actions
             get(ref(db, 'settings/payment')).then(snap => { 
                 if(snap.exists() && snap.val().zap_key) {
                     window.ZAP_KEY = snap.val().zap_key;
@@ -844,7 +827,6 @@
                 }
             });
             
-            // Load dashboard immediately
             document.querySelector('.nav-item[data-target="dashboard"]').click();
         } else { 
             if(user) await signOut(auth); 
@@ -864,7 +846,7 @@
     };
     document.getElementById('btn-logout').onclick = async () => { showLoader(); await signOut(auth); };
 
-    // --- LAZY LOADING ARCHITECTURE (FIXED PERFORMANCE) ---
+    // LAZY LOADING
     window.loadSection = (target) => {
         showLoader();
         setTimeout(async () => {
@@ -885,7 +867,7 @@
                 }
             } catch(e) { console.error(e); showToast("Error loading data", "error"); }
             hideLoader();
-        }, 50); // Small timeout to allow UI to render loader
+        }, 50);
     };
 
     document.querySelectorAll('.nav-item[data-target]').forEach(item => {
@@ -948,12 +930,11 @@
         });
     });
 
-    // --- DASHBOARD & REALTIME COUNTERS ---
+    // DASHBOARD & REALTIME COUNTERS
     let dashListenersSetup = false;
     async function initDashboardStats() {
         if(!dashListenersSetup) {
             dashListenersSetup = true;
-            // Lightweight realtime listeners ONLY for pending badges
             const listenPending = (path, elementId) => {
                 onValue(query(ref(db, path), limitToLast(200)), snap => {
                     let pending = 0;
@@ -971,7 +952,6 @@
             });
         }
 
-        // Fetch recent data for chart and revenue calculation
         const [gSnap, mSnap, cSnap] = await Promise.all([
             get(query(ref(db, 'gateway_payments'), limitToLast(500))),
             get(query(ref(db, 'manual_deposits'), limitToLast(500))),
@@ -1008,7 +988,7 @@
         updateChart(allDeposits);
     }
 
-    // --- DYNAMIC CHART.JS LOADING ---
+    // CHART.JS
     async function updateChart(allDeposits) {
         if (!window.Chart) {
             await new Promise((resolve) => {
@@ -1055,7 +1035,7 @@
         });
     }
 
-    // --- DATA TABLES (OPTIMIZED WITH GET) ---
+    // DATA TABLES
     async function initUsersTable() {
         const snap = await get(query(ref(db, 'users'), limitToLast(500)));
         usersDataCache = snap.val() || {};
@@ -1086,7 +1066,6 @@
         renderCryptoTable(list);
     }
 
-    // --- PURCHASES FIX (PREVENTS OVERWRITING BUGS) ---
     async function initPurchasesTable() {
         const snap = await get(query(ref(db, 'purchases'), limitToLast(500)));
         const allPurchases = snap.val() || {}; 
@@ -1094,15 +1073,12 @@
         
         for(let uid in allPurchases) { 
             let userData = allPurchases[uid];
-            
-            // Smart Fallback: If User Panel accidentally overwrote and saved as an object instead of a list
             if (userData.panelId || userData.plan) {
                 let item = userData;
                 item.uid = uid;
-                item.pushId = uid; // Fallback ID
+                item.pushId = uid;
                 list.push(item);
             } else {
-                // Correct Structure: List of purchases
                 for(let pushId in userData) { 
                     let item = userData[pushId]; 
                     if(typeof item === 'object') {
@@ -1117,7 +1093,6 @@
         renderPurchasesTable(list);
     }
 
-    // --- MANAGE PANELS FIX ---
     async function initPanelsTable() {
         const snap = await get(ref(db, 'panels'));
         panelsDataCache = snap.val() || {};
@@ -1137,7 +1112,6 @@
         renderCoupons(coupons);
     }
 
-    // 🔥 FIX: DUAL-FETCH SETTINGS TO MATCH USER PANEL ARCHITECTURE 🔥
     async function initSettings() {
         const [paySnap, depSnap, supSnap, brandSnap] = await Promise.all([
             get(ref(db, 'settings/payment')),
@@ -1149,7 +1123,6 @@
         const payData = paySnap.val() || {};
         const depData = depSnap.val() || {};
 
-        // ZapUPI & Manual UPI (Prefer settings/payment as User Panel uses this)
         const zapKey = payData.zap_key || depData.zap_key || '';
         const upiId = payData.upiId || depData.upi_id || '';
         const upiQr = payData.qrImage || depData.upi_qr || '';
@@ -1160,7 +1133,6 @@
         document.getElementById('set-qr').value = upiQr;
         document.getElementById('qr-preview').innerHTML = upiQr ? `<img src="${upiQr}" style="max-width:180px; border-radius:12px; border:1px solid var(--border); margin-top:10px;">` : '';
         
-        // Crypto (From deposit_settings as User Panel uses this)
         document.getElementById('set-crypto-payid').value = depData.binance_pay_id || '';
         document.getElementById('set-crypto-address').value = depData.usdt_address || '';
         document.getElementById('set-crypto-rate').value = depData.crypto_rate || '';
@@ -1198,7 +1170,6 @@
         });
     }
 
-    // --- ADD PANEL & LIVE PREVIEW ---
     window.updateLivePreview = () => {
         const name = document.getElementById('add-p-name').value || 'Panel Name';
         const logo = document.getElementById('add-p-logo').value || '';
@@ -1387,7 +1358,6 @@
         catch (e) { showToast("Update failed", "error"); hideLoader(); } 
     };
 
-    // --- 🔥 FIX: DUAL-SAVE CONFIGURATIONS TO MATCH USER PANEL 🔥 ---
     document.getElementById('btn-save-settings').onclick = async () => {
         showLoader(); 
         try { 
@@ -1395,16 +1365,14 @@
             const upiId = document.getElementById('set-upi').value.trim();
             const upiQr = document.getElementById('set-qr').value.trim();
             
-            // 1. Save to settings/payment (User Panel listens to this for ZapUPI & Manual UPI)
             await set(ref(db, 'settings/payment'), { 
                 zap_key: zapKey,
                 upiId: upiId, 
                 qrImage: upiQr 
             }); 
 
-            // 2. Save to deposit_settings (User Panel listens to this for Crypto)
             await set(ref(db, 'deposit_settings'), { 
-                zap_key: zapKey, // Duplicated for safety
+                zap_key: zapKey,
                 upi_id: upiId,
                 upi_qr: upiQr,
                 binance_pay_id: document.getElementById('set-crypto-payid').value.trim(),
@@ -1445,20 +1413,20 @@
         list.forEach(p => {
             const color = p.status === 'approved' ? 'var(--success)' : (p.status === 'rejected' ? 'var(--danger)' : 'var(--warning)');
             let icon = '<i class="fas fa-hand-holding-usd" style="color:var(--success);"></i>';
-            if(p.id.startsWith('ORD')) icon = '<i class="fas fa-bolt" style="color:var(--danger);"></i>';
-            if(p.id.startsWith('CRY')) icon = '<i class="fab fa-bitcoin" style="color:var(--neon-crypto);"></i>';
+            if(p.id && p.id.startsWith('ORD')) icon = '<i class="fas fa-bolt" style="color:var(--danger);"></i>';
+            if(p.id && p.id.startsWith('CRY')) icon = '<i class="fab fa-bitcoin" style="color:var(--neon-crypto);"></i>';
             
             html += `
                 <div style="display:flex; align-items:center; gap:15px; padding:12px 15px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); margin-bottom: 10px;">
                     <div style="width:45px; height:45px; border-radius:12px; background:var(--surface-light); display:flex; justify-content:center; align-items:center; font-size:18px;">${icon}</div>
-                    <div style="flex:1;"><strong style="display:block; font-size:14px;">${p.email || p.uid}</strong><span style="font-size:11px; color:var(--text-muted);">${p.timestamp ? new Date(p.timestamp).toLocaleDateString() : ''} • Ref: ${p.id.substring(0,8)}...</span></div>
+                    <div style="flex:1;"><strong style="display:block; font-size:14px;">${p.email || p.uid}</strong><span style="font-size:11px; color:var(--text-muted);">${p.timestamp ? new Date(p.timestamp).toLocaleDateString() : ''} • Ref: ${p.id ? p.id.substring(0,8) : ''}...</span></div>
                     <div style="font-weight:800; font-size:15px; color:${color};">₹${p.amount}</div>
                 </div>`;
         });
         container.innerHTML = html;
     }
 
-    // --- 🔥 ZAPUPI GATEWAY PAYMENTS SYSTEM 🔥 ---
+    // ZAPUPI GATEWAY
     function renderGatewayTable(payList) {
         const tbody = document.getElementById('gateway-tbody'); 
         let html = '';
@@ -1567,7 +1535,7 @@
         hideLoader();
     }
 
-    // --- 🔥 MANUAL DEPOSITS SYSTEM 🔥 ---
+    // MANUAL DEPOSITS
     function renderManualTable(manualList) {
         const tbody = document.getElementById('manual-tbody'); 
         let html = '';
@@ -1640,7 +1608,7 @@
         } catch (e) { showToast("Action failed", "error"); hideLoader(); btn.disabled = false; btn.innerHTML = originalText; } 
     };
 
-    // --- 🔥 CRYPTO DEPOSITS SYSTEM 🔥 ---
+    // CRYPTO DEPOSITS
     function renderCryptoTable(cryptoList) {
         const tbody = document.getElementById('crypto-tbody'); 
         let html = '';
@@ -1713,7 +1681,7 @@
         } catch (e) { showToast("Action failed", "error"); hideLoader(); btn.disabled = false; btn.innerHTML = originalText; } 
     };
 
-    // --- USERS & BALANCE MANAGEMENT ---
+    // USERS & BALANCE MANAGEMENT
     function renderUsersTable(users) {
         const tbody = document.getElementById('users-tbody'); 
         let html = '';
@@ -1740,207 +1708,133 @@
         
         let newBal = current; 
         let diff = amount;
-        let desc = "";
 
-        if(type === 'add') { newBal += amount; desc = "Admin Added Funds"; }
-        if(type === 'deduct') { newBal = Math.max(0, newBal - amount); desc = "Admin Deducted Funds"; diff = -amount; }
-        if(type === 'set') { newBal = amount; desc = "Admin Set Exact Balance"; diff = newBal - current; }
-        
-        showLoader(); 
-        try { 
-            await update(ref(db, `users/${uid}`), { balance: newBal }); 
-            
-            const txId = "ADM" + Date.now();
-            await set(ref(db, `transactions/${uid}/${txId}`), {
-                id: txId, type: "admin_edit", amount: diff, status: "success",
-                desc: desc, date: new Date().toISOString()
+        if(type === 'add') { newBal += amount; }
+        if(type === 'deduct') { newBal = Math.max(0, newBal - amount); diff = -amount; }
+        if(type === 'set') { newBal = amount; diff = amount - current; }
+
+        showLoader();
+        try {
+            await set(ref(db, `users/${uid}/balance`), newBal);
+            await push(ref(db, `transactions/${uid}`), {
+                type: 'admin_adjustment',
+                amount: diff,
+                status: 'success',
+                timestamp: serverTimestamp(),
+                description: 'Admin balance adjustment'
             });
-
-            showToast("Balance updated"); 
-            closeModal('modal-balance'); 
+            showToast("User balance updated!");
+            closeModal('modal-balance');
             window.loadSection('users');
-        } catch(e) { showToast("Update failed", "error"); hideLoader(); } 
+        } catch(e) { showToast("Failed to update balance", "error"); hideLoader(); }
     };
 
+    // PURCHASES TABLE
     function renderPurchasesTable(list) {
-        const tbody = document.getElementById('purchases-tbody'); 
+        const tbody = document.getElementById('purchases-tbody');
         let html = '';
         list.forEach(p => {
-            const email = usersDataCache[p.uid] ? usersDataCache[p.uid].email : p.uid; 
-            const panelName = p.panelName || (panelsDataCache[p.panelId] ? panelsDataCache[p.panelId].name : 'Unknown Panel');
-            html += `<tr><td style="font-size:12px;">${p.date ? new Date(p.date).toLocaleString() : 'N/A'}</td><td>${email}</td><td><strong>${panelName}</strong><br><span class="badge badge-active" style="margin-top:4px;">${p.label || p.plan || 'N/A'}</span></td><td style="font-family:monospace; color:var(--accent); font-weight:bold; letter-spacing:1px; background:rgba(188, 19, 254,0.1); padding:5px 10px; border-radius:6px;">${p.key || '-'}</td></tr>`;
+            const email = p.email || (usersDataCache[p.uid] ? usersDataCache[p.uid].email : p.uid);
+            html += `
+                <tr>
+                    <td>${p.date ? new Date(p.date).toLocaleString() : 'N/A'}</td>
+                    <td><strong>${email}</strong></td>
+                    <td><span style="color:var(--accent); font-weight:600;">${p.panelName || p.panelId || 'Panel'}</span> (${p.plan || 'Plan'})</td>
+                    <td><span style="font-family:monospace; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; color:var(--success); font-weight:bold;">${p.key || p.licenseKey || 'N/A'}</span></td>
+                </tr>`;
         });
         tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No purchases found</td></tr>';
     }
 
-    // --- PROMOTIONS SYSTEM ---
+    // PROMOTIONS SYSTEM
     document.getElementById('btn-add-promo').onclick = async () => {
-        const title = document.getElementById('promo-title').value.trim(); 
-        const image = document.getElementById('promo-img').value.trim(); 
+        const title = document.getElementById('promo-title').value.trim();
+        const img = document.getElementById('promo-img').value.trim();
         const link = document.getElementById('promo-link').value.trim();
-        
-        if (!title) return showToast('Promotion Title is required', 'error');
-        
+
+        if(!title) return showToast("Promo title is required", "error");
+
         showLoader();
         try {
-            await push(ref(db, 'promotions'), {
-                title, image, link, status: true, createdAt: serverTimestamp()
-            });
-            showToast('Promotion added successfully!');
-            document.getElementById('promo-title').value = ''; 
-            document.getElementById('promo-img').value = ''; 
+            await push(ref(db, 'promotions'), { title, image: img, link, status: 'active', timestamp: serverTimestamp() });
+            showToast("Promotion created!");
+            document.getElementById('promo-title').value = '';
+            document.getElementById('promo-img').value = '';
             document.getElementById('promo-link').value = '';
             window.loadSection('promotions');
-        } catch(e) { showToast('Failed to add promotion', 'error'); hideLoader(); }
+        } catch(e) { showToast("Failed to add promo", "error"); hideLoader(); }
     };
 
-    function renderPromotions(promotions) {
+    function renderPromotions(promos) {
         const list = document.getElementById('promotions-list');
         let html = '';
-        
-        const promoArray = Object.entries(promotions).map(([id, data]) => ({ id, ...data }));
-        promoArray.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-        if (promoArray.length === 0) { 
-            list.innerHTML = '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding: 20px;">No promotions currently available</div>'; 
-            return; 
-        }
-
-        promoArray.forEach(p => {
-            const isActive = p.status === true || p.status === "true";
-            const imgHTML = p.image 
-                ? `<img src="${p.image}" onerror="this.style.display='none'; this.parentElement.innerHTML+='<div style=\\'width:100%; height:120px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border-radius:8px; color:var(--text-muted); font-size:12px;\\'><i class=\\'fas fa-image-slash\\' style=\\'margin-right:5px;\\'></i> Invalid Image</div>';" style="width:100%; height:120px; object-fit:cover; border-radius:12px; border:1px solid var(--border);">` 
-                : `<div style="width:100%; height:120px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border-radius:12px; color:var(--text-muted); font-size:12px;"><i class="fas fa-image-slash" style="margin-right:5px;"></i> No Image</div>`;
-                
-            const linkHTML = p.link 
-                ? `<a href="${p.link}" target="_blank" style="color:var(--accent-secondary); font-size:12px; font-weight:500; text-decoration:none; word-break: break-all;"><i class="fas fa-external-link-alt"></i> ${p.link}</a>` 
-                : `<span style="font-size:12px; color:var(--text-muted);">No Link Provided</span>`;
-
+        for(let id in promos) {
+            const p = promos[id];
             html += `
-            <div style="background:rgba(0,0,0,0.2); padding:20px; border-radius:16px; border:1px solid var(--border); display:flex; flex-direction:column; gap:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong style="color:var(--text-main); font-size:15px;">${p.title}</strong>
-                    <span class="badge ${isActive ? 'badge-success' : 'badge-danger'}">${isActive ? 'Active' : 'Disabled'}</span>
-                </div>
-                ${imgHTML}
-                ${linkHTML}
-                <div style="display:flex; gap:10px; margin-top:5px;">
-                    <button class="btn btn-outline btn-sm" style="flex:1;" onclick="window.togglePromo('${p.id}', ${isActive})">${isActive ? '<i class="fas fa-ban"></i> Disable' : '<i class="fas fa-check"></i> Enable'}</button>
-                    <button class="btn btn-primary btn-sm" onclick="window.openEditPromo('${p.id}')"><i class="fas fa-edit"></i> Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="window.deletePromo('${p.id}')"><i class="fas fa-trash"></i> Delete</button>
-                </div>
-            </div>`;
-        });
-        list.innerHTML = html;
+                <div class="glass" style="padding:15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong style="font-size:14px; display:block;">${p.title}</strong>
+                        <span style="font-size:11px; color:var(--text-muted);">${p.link || 'No Link'}</span>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="deletePromo('${id}')"><i class="fas fa-trash"></i></button>
+                </div>`;
+        }
+        list.innerHTML = html || '<div style="padding:20px; text-align:center; color:var(--text-muted);">No promotions found</div>';
     }
 
-    window.togglePromo = async (id, currentStatus) => { 
+    window.deletePromo = async (id) => {
+        if(!confirm("Delete promotion?")) return;
         showLoader();
-        try {
-            await update(ref(db, `promotions/${id}`), { status: !currentStatus });
-            showToast(`Promotion ${!currentStatus ? 'Activated' : 'Disabled'}`);
-            window.loadSection('promotions');
-        } catch(e) { showToast('Status update failed', 'error'); hideLoader(); }
+        try { await remove(ref(db, `promotions/${id}`)); showToast("Promo deleted"); window.loadSection('promotions'); }
+        catch(e) { showToast("Error", "error"); hideLoader(); }
     };
 
-    window.deletePromo = async (id) => { 
-        if(!confirm("Are you sure you want to delete this promotion?")) return;
-        showLoader();
-        try { await remove(ref(db, `promotions/${id}`)); showToast('Promotion deleted permanently'); window.loadSection('promotions'); } 
-        catch(e) { showToast('Deletion failed', 'error'); hideLoader(); }
-    };
+    // COUPONS SYSTEM
+    document.getElementById('btn-add-coupon').onclick = async () => {
+        const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+        const discount = parseFloat(document.getElementById('coupon-discount').value);
+        const max = document.getElementById('coupon-max').value.trim();
 
-    window.openEditPromo = (id) => {
-        const p = promotionsDataCache[id];
-        if(!p) return;
-        document.getElementById('edit-promo-id').value = id;
-        document.getElementById('edit-promo-title').value = p.title || '';
-        document.getElementById('edit-promo-img').value = p.image || '';
-        document.getElementById('edit-promo-link').value = p.link || '';
-        openModal('modal-edit-promo');
-    };
-
-    document.getElementById('btn-save-edit-promo').onclick = async () => {
-        const id = document.getElementById('edit-promo-id').value;
-        const title = document.getElementById('edit-promo-title').value.trim();
-        const image = document.getElementById('edit-promo-img').value.trim();
-        const link = document.getElementById('edit-promo-link').value.trim();
-
-        if(!title) return showToast('Title cannot be empty', 'error');
+        if(!code || isNaN(discount)) return showToast("Valid Code and Discount required", "error");
 
         showLoader();
         try {
-            await update(ref(db, `promotions/${id}`), { title, image, link });
-            showToast('Promotion updated successfully!');
-            closeModal('modal-edit-promo');
-            window.loadSection('promotions');
-        } catch(e) { showToast('Failed to update promotion', 'error'); hideLoader(); }
+            await set(ref(db, `coupons/${code}`), {
+                discount: discount,
+                maxUsage: max ? parseInt(max) : 'unlimited',
+                usedCount: 0,
+                status: 'active'
+            });
+            showToast("Coupon created!");
+            document.getElementById('coupon-code').value = '';
+            document.getElementById('coupon-discount').value = '';
+            document.getElementById('coupon-max').value = '';
+            window.loadSection('coupons');
+        } catch(e) { showToast("Failed to create coupon", "error"); hideLoader(); }
     };
 
-    // --- 🔥 FIREBASE COUPONS SYSTEM 🔥 ---
     function renderCoupons(coupons) {
-        const tbody = document.getElementById('coupons-tbody'); 
+        const tbody = document.getElementById('coupons-tbody');
         let html = '';
-        if(coupons.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No coupon codes available</td></tr>'; return; }
-        
         coupons.forEach(c => {
-            const limitText = c.maxUse ? `${c.used || 0} / ${c.maxUse}` : `${c.used || 0} / ∞`;
             html += `
                 <tr>
-                    <td><strong style="color:var(--accent); font-family:monospace; font-size:14px; background: rgba(188, 19, 254, 0.1); padding: 4px 8px; border-radius: 4px;">${c.code}</strong></td>
-                    <td style="font-weight: bold; color: var(--success);">${c.discount}%</td>
-                    <td style="color: var(--text-muted);">${limitText}</td>
-                    <td><span class="badge ${c.status ? 'badge-success' : 'badge-danger'}">${c.status ? 'Active' : 'Disabled'}</span></td>
-                    <td style="display:flex; gap:5px;">
-                        <button class="btn btn-outline btn-sm" onclick="window.toggleCoupon('${c.id}', ${c.status})" title="${c.status ? 'Disable' : 'Enable'}">${c.status ? '<i class="fas fa-ban"></i>' : '<i class="fas fa-check"></i>'}</button>
-                        <button class="btn btn-danger btn-sm" onclick="window.deleteCoupon('${c.id}')" title="Delete"><i class="fas fa-trash"></i></button>
-                    </td>
+                    <td style="font-family:monospace; font-weight:bold; color:var(--accent);">${c.id}</td>
+                    <td>${c.discount}%</td>
+                    <td>${c.usedCount || 0} / ${c.maxUsage || '∞'}</td>
+                    <td><span class="badge badge-${c.status}">${c.status}</span></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="deleteCoupon('${c.id}')"><i class="fas fa-trash"></i></button></td>
                 </tr>`;
         });
-        tbody.innerHTML = html;
+        tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No coupons found</td></tr>';
     }
-    
-    document.getElementById('btn-add-coupon').onclick = async () => {
-        const code = document.getElementById('coupon-code').value.trim().toUpperCase(); 
-        const discount = parseInt(document.getElementById('coupon-discount').value); 
-        const maxUse = document.getElementById('coupon-max').value ? parseInt(document.getElementById('coupon-max').value) : null;
-        
-        if(!code || isNaN(discount)) return showToast('Valid Code and Discount are required', 'error'); 
-        if(discount <= 0 || discount > 100) return showToast('Discount must be between 1% and 100%', 'error');
-        
+
+    window.deleteCoupon = async (code) => {
+        if(!confirm(`Delete coupon ${code}?`)) return;
         showLoader();
-        try {
-            const snap = await get(ref(db, `coupons`));
-            let exists = false;
-            if(snap.exists()) {
-                snap.forEach(child => { if(child.val().code === code) exists = true; });
-            }
-            if(exists) {
-                hideLoader();
-                return showToast('This coupon code already exists', 'error');
-            }
-
-            await push(ref(db, 'coupons'), { code, discount, maxUse, used: 0, status: true, createdAt: serverTimestamp() });
-            showToast('Coupon code created successfully!');
-            document.getElementById('coupon-code').value = ''; document.getElementById('coupon-discount').value = ''; document.getElementById('coupon-max').value = '';
-            window.loadSection('coupons');
-        } catch(e) { showToast('Failed to create coupon', 'error'); hideLoader(); }
+        try { await remove(ref(db, `coupons/${code}`)); showToast("Coupon deleted"); window.loadSection('coupons'); }
+        catch(e) { showToast("Error", "error"); hideLoader(); }
     };
-
-    window.toggleCoupon = async (id, currentStatus) => { 
-        showLoader();
-        try { await update(ref(db, `coupons/${id}`), { status: !currentStatus }); showToast(`Coupon ${!currentStatus ? 'activated' : 'disabled'}`); window.loadSection('coupons'); } 
-        catch(e) { showToast('Status update failed', 'error'); hideLoader(); }
-    };
-
-    window.deleteCoupon = async (id) => { 
-        if(confirm(`Are you sure you want to delete this coupon?`)) { 
-            showLoader();
-            try { await remove(ref(db, `coupons/${id}`)); showToast('Coupon deleted successfully'); window.loadSection('coupons'); } 
-            catch(e) { showToast('Deletion failed', 'error'); hideLoader(); }
-        } 
-    };
-
 </script>
 </body>
 </html>
